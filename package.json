@@ -13,12 +13,12 @@
   "dependencies": {
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
+    "opusscript": "0.0.8",
     "youtube-search": "^1.1.6",
-    "ytdl": "^1.4.1",
-    "opusscript":""
-
+    "ytdl": "^1.4.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.6"
   }
 }
+
