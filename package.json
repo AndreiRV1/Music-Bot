@@ -15,7 +15,6 @@
     "dotenv": "^8.2.0",
     "youtube-search": "^1.1.6",
     "ytdl": "^1.4.1",
-    "heroku-buildpack-apt":""
   },
   "devDependencies": {
     "nodemon": "^2.0.6"
