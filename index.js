@@ -10,7 +10,8 @@ const search = require('youtube-search');
 const opts = {
   maxResults:25,
   key:gtoken,
-  type:"video"
+  type:"video",
+  videoCategoryId:"10"
 }
 
 const ytdl = require('ytdl-core');
