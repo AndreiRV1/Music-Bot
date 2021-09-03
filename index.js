@@ -111,6 +111,7 @@ async function execute(message,serverQueue){
     })
     
     message.content = `-play ${videos[0]}`;
+     console.log(message.content);
     execute(message,serverQueue);
 
     
