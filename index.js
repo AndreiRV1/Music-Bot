@@ -110,7 +110,7 @@ async function execute(message,serverQueue){
         videos.push(`https://www.youtube.com/watch?v=${item.resourceId.videoId}`)
     })
     
-    message.content = videos[0];
+    message.content = `-play ${videos[0]}`;
     execute(message,serverQueue);
 
     
