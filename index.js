@@ -112,11 +112,7 @@ async function execute(message,serverQueue){
     })
     
     console.log(videos)  
-        message.content = `-play ${videos[0]}`;
-        console.log(message.content)
-        execute(message,serverQueue);
-
-
+        
     for (let i = 0; i < videos.length; i++) {
         const songInfo = await ytdl.getInfo(videos[i]);
         var song = {
