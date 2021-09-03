@@ -4,12 +4,12 @@
 //dependencies NPM node discord.js  discord-youtube-api ytdl youtube-search ffmpeg
 require("dotenv").config()
 const Discord = require('discord.js');
-const{prefix,token,gtoken} = require('./config.json');
+const{prefix} = require('./config.json');
 
 const search = require('youtube-search');
 const opts = {
   maxResults:25,
-  key:gtoken,
+  key:process.env.GOOGLE,
   type:"video",
   videoCategoryId:"10",
 }
@@ -65,17 +65,25 @@ client.on("message", async message =>{
     } else if (message.content.startsWith(`${prefix}queue`)) {
       showQueue(message, serverQueue);
       return;
+    }else if (message.content.startsWith(`${prefix}jump`)) {
+      jump(message, serverQueue);
+      return;
     } else if (message.content.startsWith(`${prefix}loop`)) {
       loop(message, serverQueue);
       return;
     }else if(message.content.startsWith(`${prefix}help`)){
-        message.channel.send(`
-        -play : play a song
--skip : skip a song
--clear : clear the queue
--queue : see the current queue
--loop : loop current queue`)
-    } else {
+      message.channel.send({
+        embed:{
+          title:'Available Commands',
+          description: `-play [querry/link/playlist] to play a song \n
+          -skip to skip a song\n
+          -die to disconnect\n
+          -queue to show the queue \n
+          -jump [queue number] to jump to track \n
+          -loop to loop the queue`
+        }
+      }).catch(err=>console.log(err))
+    }else {
         message.channel.send({embed:{title:"You need to enter a valid command! Use '-help' to see all the available commands"}});
     }
 
@@ -315,4 +323,8 @@ function loop(message,serverQueue){
   }
 }
 
-
+function jump(message,serverQueue){
+    serverQueue.songs.splice(0,message.content.split(" ")[1]-2)
+    serverQueue.connection.dispatcher.end()
+    return message.channel.send({embed:{title:`Jumped to ${serverQueue.songs[1].title}!`}})
+}
