@@ -6,8 +6,6 @@ require("dotenv").config()
 const Discord = require('discord.js');
 const{prefix,token,gtoken} = require('./config.json');
 
-
-
 const search = require('youtube-search');
 const opts = {
   maxResults:25,
@@ -16,7 +14,7 @@ const opts = {
 }
 
 const ytdl = require('ytdl-core');
-
+const ypi = require('youtube-playlist-info');
 // Create client
 
 const client = new Discord.Client();
@@ -69,9 +67,6 @@ client.on("message", async message =>{
     } else if (message.content.startsWith(`${prefix}loop`)) {
       loop(message, serverQueue);
       return;
-    }else if (message.content.startsWith(`${prefix}search`)) {
-      searchYT(message, serverQueue);
-      return;
     }else if(message.content.startsWith(`${prefix}help`)){
         message.channel.send(`
         -play : play a song
@@ -91,10 +86,8 @@ client.on("message", async message =>{
 
 async function execute(message,serverQueue){
     //"Read" the message
-    const mess = message.content.split(" ");
-    
+    const mess = message.content.split(" ")[1]; 
     const voiceChannel = message.member.voice.channel;
-    
     const permission = voiceChannel.permissionsFor(message.client.user);
 
     //check if user is in a voice channel || the bot has permission to join channel
@@ -106,21 +99,92 @@ async function execute(message,serverQueue){
         return message.channel.send({embed:{title:"I need permissions to join and speak here!"}});
     }
 
-    //get song info
+    //get song info\
     
+    var final = []
     
-    const songInfo = await ytdl.getInfo(mess[1]);
-    const song = {
-        title:songInfo.videoDetails.title,
-        url:songInfo.videoDetails.video_url,
-        duration:songInfo.videoDetails.lengthSeconds,
-        author:songInfo.videoDetails.author.name
+    if(/playlist/.test(mess) && !/watch/.test(mess)){
+        console.log("PLAYLIST")
+    let res = await ypi(process.env.GOOGLE, message.content.split("list=")[1]);
+    let videos = []
+    res.forEach(item=>{
+        videos.push(`https://www.youtube.com/watch?v=${item.resourceId.videoId}`)
+    })
+    
+    console.log(videos)
+
+    
+    for (let i = 0; i < videos.length; i++) {
+        const songInfo = await ytdl.getInfo(videos[i]);
+        var song = {
+            title:songInfo.videoDetails.title,
+            url:songInfo.videoDetails.video_url,
+            duration:songInfo.videoDetails.lengthSeconds,
+            author:songInfo.videoDetails.author.name
+        }
+        final.push(song);
+        console.log(final)
     }
 
+
+
+    }else if(!/playlist/.test(mess) && /watch/.test(mess)){
+        console.log("LINK")
+        const songInfo = await ytdl.getInfo(mess);
+        var song = {
+            title:songInfo.videoDetails.title,
+            url:songInfo.videoDetails.video_url,
+            duration:songInfo.videoDetails.lengthSeconds,
+            author:songInfo.videoDetails.author.name
+        }
+        final.push(song)
+    }else{        
+        console.log("QUERRY")
+        let result = await search(message.content.split(" ")[1],opts)
+        if(result){
+            let youtubeResults = result.results;
+            let i = 0;
+            let titles = youtubeResults.map(result =>{
+            i++;
+            return i+") "+result.channelTitle+"  "+result.title;
+        })
+        message.channel.send({
+            embed:{
+            title:'Select your song',
+            description: titles.join("\n")
+        }
+        }).catch(err=>console.log(err))
+
+        filter = m =>(m.author.id === message.author.id)
+        let nr = await message.channel.awaitMessages(filter,{max : 1})
+        var selectedSong = youtubeResults[nr.first().content - 1];
+        await message.channel.send({
+         embed:{
+            title:`Selected ${selectedSong.title}`,
+            URL:`${selectedSong.link}`,
+            Description:`${selectedSong.description}`,
+            Thumbnail:`${selectedSong.thumbnails.default.url}`
+          }
+      })
+
+        }
+        
+        const songInfo = await ytdl.getInfo(selectedSong.link);
+        var song = {
+            title:songInfo.videoDetails.title,
+            url:songInfo.videoDetails.video_url,
+            duration:songInfo.videoDetails.lengthSeconds,
+            author:songInfo.videoDetails.author.name
+        }
+        final.push(song)
+    }
+
+    
+
+
     //check if queue is empty or not
-
     if(!serverQueue){
-
+        console.log("NEW*************")
         const queueConstruct = {
             textChannel : message.channel,
             voiceChannel :voiceChannel,
@@ -137,7 +201,7 @@ async function execute(message,serverQueue){
 
         //push in the song
 
-        queueConstruct.songs.push(song);
+        queueConstruct.songs.push(...final);
 
         //try to join voice channel
 
@@ -152,17 +216,17 @@ async function execute(message,serverQueue){
             queue.delete(message.guild.id);
             return message.channel.send(err);
         }
-
+        flag = true;
     }else{
 
         //push song to queue
-        serverQueue.songs.push(song);
+        serverQueue.songs.push(...final);
         return message.channel.send({embed:{title:`${song.title} has been added to the queue!`}});
     }
 
     function play(guild,song){
         //if song list is empty than leave 
-        const serverQueue = queue.get(guild.id);
+        var serverQueue = queue.get(guild.id);
         if(!song){
             serverQueue.voiceChannel.leave();
             queue.delete(guild.id);
@@ -181,8 +245,10 @@ async function execute(message,serverQueue){
     })
     .on("error", error => console.error(error));
   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-  serverQueue.textChannel.send({embed:{title:`Start playing: **${song.title}**`}});
+  serverQueue.textChannel.send({embed:{title:`Started playing: **${song.title}**`}});
+  flag = false;
     }
+    return serverQueue
 }
 
 //skip function
@@ -249,43 +315,4 @@ function loop(message,serverQueue){
     serverQueue.isLooping = true;
     return message.channel.send({embed:{title:"Queue looping!"}})
   }
-}
-
-
-async function searchYT(message, serverQueue){
-
-  // let filter = m=>m.author.id === message.author.id;
-  // let test = await message.channel.send("Type your querry")
-  // let collector = await message.channel.awaitMessages(filter,{max:1}) collector.first().content
-  let result = await search(message.content.split(" ")[1],opts)
-  if(result){
-    let youtubeResults = result.results;
-    let i = 0;
-    let titles = youtubeResults.map(result =>{
-      i++;
-      return i+") "+result.title+" a:"+result.channelTitle;
-    })
-    message.channel.send({
-      embed:{
-        title:'Select your song',
-        description: titles.join("\n")
-      }
-    }).catch(err=>console.log(err))
-
-    filter = m =>(m.author.id === message.author.id)
-    let nr = await message.channel.awaitMessages(filter,{max : 1})
-    var selectedSong = youtubeResults[nr.first().content - 1];
-    await message.channel.send({
-      embed:{
-        title:`${selectedSong.title}`,
-        URL:`${selectedSong.link}`,
-        Description:`${selectedSong.description}`,
-        Thumbnail:`${selectedSong.thumbnails.default.url}`
-      }
-    })
-
-  }
-  message.content = `-play ${selectedSong.link}`
-  execute(message,serverQueue)
-
 }
