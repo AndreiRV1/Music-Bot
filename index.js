@@ -113,7 +113,7 @@ async function execute(message,serverQueue){
         videos.push(`https://www.youtube.com/watch?v=${item.resourceId.videoId}`)
     })
     
-    for (let i = 0; i < videos.length-50; i++) {
+    for (let i = 0; i < videos.length; i++) {
         var song = {
             title:res[i].title,
             url:videos[i],
@@ -295,6 +295,7 @@ function showQueue(message,serverQueue){
     i++
     return i+") "+elem.author+"  "+elem.title+"  "+`${Math.floor(elem.duration / 60)} : ${elem.duration-(Math.floor(elem.duration / 60)*60)}`;
   })
+  cuurrQueue.splice(20,currQueue.length-1)
   return message.channel.send({
     embed:{
       title:'Your queue',
