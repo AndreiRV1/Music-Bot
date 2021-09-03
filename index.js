@@ -110,10 +110,11 @@ async function execute(message,serverQueue){
         videos.push(`https://www.youtube.com/watch?v=${item.resourceId.videoId}`)
     })
     
-
+    message.content = videos[0];
+    execute(message,serverQueue);
 
     
-    for (let i = 0; i < videos.length; i++) {
+    for (let i = 1; i < videos.length; i++) {
         const songInfo = await ytdl.getInfo(videos[i]);
         var song = {
             title:songInfo.videoDetails.title,
