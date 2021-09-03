@@ -104,17 +104,19 @@ async function execute(message,serverQueue){
     var final = []
     
     if(/playlist/.test(mess) && !/watch/.test(mess)){
+        console.log("PLAYLIST")
     let res = await ypi(process.env.GOOGLE, message.content.split("list=")[1]);
     let videos = []
     res.forEach(item=>{
         videos.push(`https://www.youtube.com/watch?v=${item.resourceId.videoId}`)
     })
     
-    message.content = `-play ${videos[0]}`;
-     console.log(message.content);
-    execute(message,serverQueue);
+    console.log(videos)  
+        message.content = `-play ${videos[0]}`;
+        console.log(message.content)
+        execute(message,serverQueue);
 
-    
+
     for (let i = 1; i < videos.length; i++) {
         const songInfo = await ytdl.getInfo(videos[i]);
         var song = {
@@ -124,13 +126,12 @@ async function execute(message,serverQueue){
             author:songInfo.videoDetails.author.name
         }
         final.push(song);
-
     }
 
 
 
     }else if(!/playlist/.test(mess) && /watch/.test(mess)){
-
+        console.log("LINK")
         const songInfo = await ytdl.getInfo(mess);
         var song = {
             title:songInfo.videoDetails.title,
@@ -140,7 +141,7 @@ async function execute(message,serverQueue){
         }
         final.push(song)
     }else{        
-
+        console.log("QUERRY")
         let result = await search(message.content.split(" ")[1],opts)
         if(result){
             let youtubeResults = result.results;
@@ -185,7 +186,7 @@ async function execute(message,serverQueue){
 
     //check if queue is empty or not
     if(!serverQueue){
-
+        console.log("NEW*************")
         const queueConstruct = {
             textChannel : message.channel,
             voiceChannel :voiceChannel,
@@ -299,7 +300,6 @@ function showQueue(message,serverQueue){
     i++
     return i+") "+elem.author+"  "+elem.title+"  "+`${Math.floor(elem.duration / 60)} : ${elem.duration-(Math.floor(elem.duration / 60)*60)}`;
   })
-  currQueue.splice(20,currQueue.length-1)
   return message.channel.send({
     embed:{
       title:'Your queue',
@@ -318,3 +318,5 @@ function loop(message,serverQueue){
     return message.channel.send({embed:{title:"Queue looping!"}})
   }
 }
+
+
