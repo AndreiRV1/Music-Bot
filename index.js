@@ -11,7 +11,7 @@ const opts = {
   maxResults:25,
   key:gtoken,
   type:"video",
-  videoCategoryId:"10"
+  videoCategoryId:"10",
 }
 
 const ytdl = require('ytdl-core');
@@ -107,21 +107,20 @@ async function execute(message,serverQueue){
     if(/playlist/.test(mess) && !/watch/.test(mess)){
         console.log("PLAYLIST")
     let res = await ypi(process.env.GOOGLE, message.content.split("list=")[1]);
+    console.log(res[0])
     let videos = []
     res.forEach(item=>{
         videos.push(`https://www.youtube.com/watch?v=${item.resourceId.videoId}`)
     })
     
-    console.log(videos)  
-        
-    for (let i = 0; i < videos.length; i++) {
-        const songInfo = await ytdl.getInfo(videos[i]);
+    for (let i = 0; i < videos.length-50; i++) {
         var song = {
-            title:songInfo.videoDetails.title,
-            url:songInfo.videoDetails.video_url,
-            duration:songInfo.videoDetails.lengthSeconds,
-            author:songInfo.videoDetails.author.name
+            title:res[i].title,
+            url:videos[i],
+            duration:0,
+            author:res[i].videoOwnerChannelTitle
         }
+        console.log(i)
         final.push(song);
     }
 
@@ -179,7 +178,6 @@ async function execute(message,serverQueue){
     }
 
     
-
 
     //check if queue is empty or not
     if(!serverQueue){
