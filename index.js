@@ -117,7 +117,7 @@ async function execute(message,serverQueue){
         execute(message,serverQueue);
 
 
-    for (let i = 1; i < videos.length; i++) {
+    for (let i = 0; i < videos.length; i++) {
         const songInfo = await ytdl.getInfo(videos[i]);
         var song = {
             title:songInfo.videoDetails.title,
