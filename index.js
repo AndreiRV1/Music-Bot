@@ -297,6 +297,7 @@ function showQueue(message,serverQueue){
     i++
     return i+") "+elem.author+"  "+elem.title+"  "+`${Math.floor(elem.duration / 60)} : ${elem.duration-(Math.floor(elem.duration / 60)*60)}`;
   })
+  currQueue.splice(20,currQueue.length-1)
   return message.channel.send({
     embed:{
       title:'Your queue',
