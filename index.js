@@ -104,14 +104,13 @@ async function execute(message,serverQueue){
     var final = []
     
     if(/playlist/.test(mess) && !/watch/.test(mess)){
-        console.log("PLAYLIST")
     let res = await ypi(process.env.GOOGLE, message.content.split("list=")[1]);
     let videos = []
     res.forEach(item=>{
         videos.push(`https://www.youtube.com/watch?v=${item.resourceId.videoId}`)
     })
     
-    console.log(videos)
+
 
     
     for (let i = 0; i < videos.length; i++) {
@@ -123,13 +122,13 @@ async function execute(message,serverQueue){
             author:songInfo.videoDetails.author.name
         }
         final.push(song);
-        console.log(final)
+
     }
 
 
 
     }else if(!/playlist/.test(mess) && /watch/.test(mess)){
-        console.log("LINK")
+
         const songInfo = await ytdl.getInfo(mess);
         var song = {
             title:songInfo.videoDetails.title,
@@ -139,7 +138,7 @@ async function execute(message,serverQueue){
         }
         final.push(song)
     }else{        
-        console.log("QUERRY")
+
         let result = await search(message.content.split(" ")[1],opts)
         if(result){
             let youtubeResults = result.results;
@@ -184,7 +183,7 @@ async function execute(message,serverQueue){
 
     //check if queue is empty or not
     if(!serverQueue){
-        console.log("NEW*************")
+
         const queueConstruct = {
             textChannel : message.channel,
             voiceChannel :voiceChannel,
