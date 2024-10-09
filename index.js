@@ -108,7 +108,7 @@ async function execute(message,serverQueue){
         return message.channel.send({embed:{title:"I need permissions to join and speak here!"}});
     }
 
-    //get song info\
+    //get song info
     
     var final = []
     
